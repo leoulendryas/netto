@@ -16,6 +16,7 @@ struct Args {
 }
 
 fn main() {
+    // Initializing the analytics engine
     let args = Args::parse();
     let root = args.path.canonicalize().unwrap_or(args.path.clone());
 
