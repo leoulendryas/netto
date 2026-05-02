@@ -53,7 +53,6 @@ pub enum Language {
     // ── Data / ML ─────────────────────────────────────────────
     Julia,
     R,
-    Matlab,
     Notebooks,  // .ipynb — Jupyter
     // ── Infrastructure / config ───────────────────────────────
     Shell,      // bash, zsh, sh
@@ -207,10 +206,10 @@ impl Language {
             Self::OCaml      => "OCaml",
             Self::Go         => "Go",
             Self::Julia      => "Julia",
-            Self::R          => "R",
-            Self::Matlab     => "MATLAB",
-            Self::Notebooks  => "Jupyter",
-            Self::Shell      => "Shell",
+            Self::R             => "R",
+            Self::Notebooks     => "Jupyter Notebook",
+            Self::Shell         => "Shell",
+
             Self::PowerShell => "PowerShell",
             Self::Dockerfile => "Dockerfile",
             Self::Sql        => "SQL",
@@ -244,6 +243,7 @@ impl Language {
             Self::Julia | Self::Yaml | Self::Dockerfile |
             Self::Elixir | Self::Other               => &["#"],
 
+
             // -- style
             Self::Haskell | Self::Sql | Self::Lua    => &["--"],
 
@@ -251,7 +251,7 @@ impl Language {
             Self::Clojure                            => &[";"],
 
             // % style
-            Self::Erlang | Self::Latex | Self::Matlab => &["%"],
+            Self::Erlang | Self::Latex => &["%"],
 
             // No line comments
             Self::Html | Self::Xml | Self::Json |
