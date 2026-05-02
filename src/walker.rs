@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 #[derive(Debug, Clone)]
 pub struct FileEntry {
     pub path: PathBuf,
-    pub size_bytes: u64,
+    pub _size_bytes: u64,
     pub extension: Option<String>,
     pub is_generated: bool,
 }
@@ -87,7 +87,7 @@ pub fn walk(root: &Path) -> Result<Vec<FileEntry>, CodescanError> {
 
         entries.push(FileEntry {
             path,
-            size_bytes,
+            _size_bytes: size_bytes,
             extension,
             is_generated,
         });

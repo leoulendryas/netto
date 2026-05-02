@@ -11,7 +11,7 @@ use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "codescan",
+    name = "netto",
     about = "Find out how much of your codebase you actually wrote",
     version,
     author
@@ -62,6 +62,7 @@ fn main() -> Result<()> {
         baseline_stats = Some(loc::count_files(&bl_files, None)?);
     }
 
+    let start_time = std::time::Instant::now();
     let files = walker::walk(&root)?;
 
     let spinner = ProgressBar::new_spinner();
@@ -82,13 +83,24 @@ fn main() -> Result<()> {
     };
 
     spinner.finish_and_clear();
+    let duration = start_time.elapsed();
 
     // "I wrote this" score calculation
-    // If no git, we use the non-generated code.
-    // If git, we could use git-based additions, but for now let's use the code count after baseline subtraction.
-    let original_lines = counts.total_source_lines;
+    let original_lines = if let Some(git) = &git_insights {
+        (git.user_authorship_stats.lines_added as u64).min(counts.total_source_lines)
+    } else {
+        counts.total_source_lines
+    };
 
-    output::cli::display_full_stats(&counts, git_insights.as_ref(), &frameworks, original_lines);
+    let project_path_str = root.to_string_lossy();
+    output::cli::display_full_stats(
+        &counts, 
+        git_insights.as_ref(), 
+        &frameworks, 
+        original_lines,
+        duration,
+        &project_path_str
+    );
 
     Ok(())
 }

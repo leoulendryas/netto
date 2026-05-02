@@ -1,5 +1,6 @@
 use git2::Repository;
 use std::collections::HashMap;
+use std::cmp::Reverse;
 use chrono::{DateTime, Utc, TimeZone, NaiveDate};
 use crate::error::CodescanError;
 use std::path::Path;
@@ -13,8 +14,8 @@ pub struct AuthorStats {
 
 pub struct GitInsight {
     pub user_authorship_stats: AuthorStats,
-    pub project_start: DateTime<Utc>,
-    pub daily_activity: HashMap<NaiveDate, usize>, // Date -> Commit count
+    pub _project_start: DateTime<Utc>,
+    pub _daily_activity: HashMap<NaiveDate, usize>, // Date -> Commit count
     pub streak: usize,
     pub total_commits: usize,
     pub most_changed_files: Vec<(String, usize)>,
@@ -88,15 +89,15 @@ pub fn get_git_insights(path: &Path, user_name: Option<&str>) -> Result<GitInsig
     }
 
     let mut sorted_files: Vec<_> = file_changes.into_iter().collect();
-    sorted_files.sort_by_key(|&(_, count)| std::cmp::Reverse(count));
+    sorted_files.sort_by_key(|&(_, count)| Reverse(count));
     let most_changed_files = sorted_files.into_iter().take(5).collect();
 
     let streak = calculate_streak(&daily_activity);
 
     Ok(GitInsight {
         user_authorship_stats: user_stats,
-        project_start: first_commit_time,
-        daily_activity,
+        _project_start: first_commit_time,
+        _daily_activity: daily_activity,
         streak,
         total_commits: commit_count,
         most_changed_files,

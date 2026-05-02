@@ -70,6 +70,8 @@ pub fn count_files(files: &[FileEntry], baseline: Option<&ProjectCount>) -> Resu
             continue;
         }
 
+        total_all_lines += count.total();
+
         let mut final_count = count.clone();
         
         // Baseline subtraction
@@ -84,7 +86,6 @@ pub fn count_files(files: &[FileEntry], baseline: Option<&ProjectCount>) -> Resu
         let stats = by_language.entry(language).or_default();
         stats.add(&final_count);
 
-        total_all_lines += final_count.total();
         if language.is_source_language() {
             total_source_lines += final_count.code;
         }
@@ -164,7 +165,7 @@ mod tests {
 
         let path = file.path().to_path_buf();
         let entry = FileEntry {
-            size_bytes: content.len() as u64,
+            _size_bytes: content.len() as u64,
             extension: Some(ext.to_string()),
             path,
             is_generated: false,
