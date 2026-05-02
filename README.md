@@ -1,162 +1,100 @@
-# netto
+# 🚀 Netto
 
-> Find out how much of your codebase you actually wrote.
+**Find out how much of your codebase you actually wrote.**
 
-`netto` is a fast Rust CLI that counts your lines of code — and separates what you built from what your framework scaffolded for you. It reads your git history, detects your stack, skips generated files, and gives you an honest score.
-
-```
-NETTO
-~/projects/myapp  ·  scanned in 0.42s
-
-[ React 18 ]  [ Node.js ]  [ TypeScript ]
-
-─────────────────────────────────────────────────────────
-CORE COUNTS
-
-    12,847        15,203             14
-  source lines   all lines   files skipped
-
-─────────────────────────────────────────────────────────
-LANGUAGE BREAKDOWN
-
-  TypeScript    ████████████████████░░░░░░░░  62.3%
-  CSS           ███████░░░░░░░░░░░░░░░░░░░░░  18.1%
-  JSON / YAML   ████░░░░░░░░░░░░░░░░░░░░░░░░  11.4%
-  Markdown      ██░░░░░░░░░░░░░░░░░░░░░░░░░░   5.4%
-  Shell         █░░░░░░░░░░░░░░░░░░░░░░░░░░░   2.8%
-
-─────────────────────────────────────────────────────────
-I WROTE THIS
-
-  34.2%
-  original authorship
-
-  your lines              4,393
-  framework baseline      8,454
-  verdict                 humbling — lots of boilerplate out there
-
-─────────────────────────────────────────────────────────
-GIT INSIGHTS
-
-      17 days        284
-  commit streak   total commits
-
-  you added       +6,821 lines across 284 commits
-  authorship      alex <alex@company.com>
-
-  PROBLEM CHILDREN
-
-  src/components/Dashboard.tsx     ████████████  47×
-  src/api/auth.ts                  ████████░░░░  34×
-  src/store/index.ts               █████░░░░░░░  21×
-
-─────────────────────────────────────────────────────────
-  ◆ 10K — true craftsman territory
-
-  netto --help for options  ·  netto diff for weekly delta
-```
+Netto is a high-performance, parallelized codebase analytics tool built in Rust. It doesn't just count lines; it tells the story of your project—stripping away the boilerplate, acknowledging your frameworks, and celebrating your coding streaks.
 
 ---
 
-## Install
+## ✨ Features
 
-**Via cargo:**
+- **Parallel Processing:** Uses `rayon` to scan thousands of files across all CPU cores in seconds.
+- **"I Wrote This" Score:** Intelligent authorship detection that compares your hand-written code against framework baselines and generated files.
+- **Git Integration:** Deep mining of git history to track streaks, total commits, and your "Problem Children" (most-changed files).
+- **Beautiful CLI:** Clean, modern terminal output with ASCII charts, color-coded bars, and milestone badges.
+- **Framework Aware:** Automatically detects and categorizes projects (Rust, Node.js, Python, Go, etc.).
+- **Smart Filtering:** respects `.gitignore`, skips binary files, and auto-detects generated headers like `// auto-generated`.
+
+---
+
+## 🌍 Supported Languages
+
+Netto supports over **50+ languages** and configuration formats out of the box:
+
+- **Web:** TypeScript, JavaScript, HTML, CSS, SCSS, Svelte, Vue, Astro, PHP, Ruby.
+- **Systems & Backend:** Rust, Go, C, C++, C#, Java, Kotlin, Zig, Swift, Objective-C.
+- **Functional:** Elixir, Haskell, Erlang, Clojure, F#, OCaml.
+- **Data & Scripting:** Python, R, Julia, Jupyter Notebooks, Shell, PowerShell, Perl.
+- **Infrastructure:** SQL, Dockerfile, GraphQL, Terraform (HCL).
+- **Config & Docs:** JSON, YAML, TOML, XML, Markdown, Rst, Latex.
+
+---
+
+## 📦 Installation
+
+### From Crates.io (Recommended)
 ```bash
 cargo install netto
 ```
 
-**Via Homebrew (macOS):**
+### From Source
 ```bash
-brew tap leoulendryas/netto
-brew install netto
-```
-
-**Download a binary** from the [releases page](https://github.com/leoulendryas/netto/releases).
-
----
-
-## Usage
-
-```bash
-# Scan the current directory
-netto
-
-# Scan a specific project
-netto ~/projects/myapp
-
-# Subtract a framework baseline (only count what you added)
-netto --baseline ~/fresh-react-app
-
-# Filter git stats to a specific author
-netto --author "Your Name"
-
-# Skip git analysis
-netto --no-git
-
-# Output as JSON
-netto --json
-```
-
----
-
-## How it works
-
-**Line counting** — netto reads every file in your project, skips blank lines and comments, and separates code from config and markup. Auto-generated files (detected by header comments like `// auto-generated`) are excluded entirely.
-
-**Framework baseline** — point `--baseline` at a fresh scaffold of your framework and netto subtracts those lines from your count. What's left is the code you actually wrote.
-
-**"I wrote this" score** — your git-attributed additions divided by total source lines. A humble number is normal. Most projects are 20–40% original.
-
-**Commit streak** — consecutive days you've made at least one commit. Counts backward from today.
-
-**Problem children** — files changed most frequently in git history. Usually where the complexity lives.
-
----
-
-## Supported languages
-
-| Language | Extensions |
-|---|---|
-| Rust | `.rs` |
-| TypeScript | `.ts`, `.tsx` |
-| JavaScript | `.js`, `.jsx`, `.mjs` |
-| Python | `.py`, `.pyw` |
-| Go | `.go` |
-| Java | `.java` |
-| CSS / SCSS | `.css`, `.scss`, `.sass` |
-| HTML | `.html`, `.htm` |
-| Shell | `.sh`, `.bash`, `.zsh` |
-| JSON / YAML | `.json`, `.yml`, `.yaml` |
-| Markdown | `.md`, `.mdx` |
-
----
-
-## Options
-
-| Flag | Description |
-|---|---|
-| `--baseline <path>` | Path to a fresh scaffold to subtract |
-| `--author <name>` | Filter git stats to this author |
-| `--no-git` | Skip git analysis entirely |
-| `--json` | Output results as JSON |
-| `--version` | Print version |
-| `--help` | Print help |
-
----
-
-## Contributing
-
-PRs are welcome. If you find a language missing, a file type being miscounted, or a framework not being detected — open an issue or send a fix.
-
-```bash
-git clone https://github.com/leoulendryas/netto
+git clone https://github.com/YOUR_GITHUB_USERNAME/netto.git
 cd netto
-cargo build
-cargo test
+cargo install --path .
 ```
 
 ---
 
-## License
+## 🛠️ Usage
 
-MIT — see [LICENSE](LICENSE)
+### Basic Scan
+Analyze the current directory:
+```bash
+netto
+```
+
+### Baseline Subtraction
+See how much *original* logic you added to a scaffold (like `create-react-app`):
+```bash
+netto --baseline path/to/fresh/scaffold
+```
+
+### Git Analytics
+Filter stats by a specific author:
+```bash
+netto --author "Your Name"
+```
+
+### Options
+```text
+Usage: netto [OPTIONS] [PATH]
+
+Arguments:
+  [PATH]  Path to the project root [default: .]
+
+Options:
+      --baseline <BASELINE>  Point to a fresh scaffold to subtract it from the count
+  -w, --web                  Open the full report in your browser after scanning
+  -j, --json                 Output raw JSON
+      --no-git               Skip git history analysis
+      --author <AUTHOR>      Filter git stats by this author name
+  -h, --help                 Print help
+  -V, --version              Print version
+```
+
+---
+
+## 🏆 Milestone Badges
+
+Netto rewards your progress with ASCII trophies as you cross code thresholds:
+- **🥉 1K Lines:** The journey begins.
+- **🥈 5K Lines:** You're building something real.
+- **🥇 10K Lines:** A true craftsman.
+- **🏆 Legendary:** Your codebase is a monument.
+
+---
+
+## 🛡️ License
+
+Distributed under the MIT License. See `LICENSE` for more information.
