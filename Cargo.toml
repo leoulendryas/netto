@@ -1,16 +1,16 @@
 [package]
-name = "codescan"
+name = "netto"
 version = "0.1.0"
 edition = "2021"
-description = "Find out how much of your codebase you actually wrote"
+description = "A beautiful codebase analytics tool to find out how much you actually wrote."
 license = "MIT"
-repository = "https://github.com/YOURUSERNAME/codescan"
+repository = "https://github.com/YOUR_GITHUB_USERNAME/netto"
 readme = "README.md"
 keywords = ["loc", "git", "statistics", "cli", "code"]
 categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
-name = "codescan"
+name = "netto"
 path = "src/main.rs"
 
 [dependencies]
