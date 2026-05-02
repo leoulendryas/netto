@@ -21,7 +21,7 @@ LANGUAGE BREAKDOWN
 
   TypeScript    ████████████████████░░░░░░░░  62.3%
   CSS           ███████░░░░░░░░░░░░░░░░░░░░░  18.1%
-  JSON / YAML   ████░░░░░░░░░░░░░░░░░░░░░░░░  11.4%
+  JSON          ████░░░░░░░░░░░░░░░░░░░░░░░░  11.4%
   Markdown      ██░░░░░░░░░░░░░░░░░░░░░░░░░░   5.4%
   Shell         █░░░░░░░░░░░░░░░░░░░░░░░░░░░   2.8%
 
@@ -85,7 +85,7 @@ netto
 netto ~/projects/myapp
 
 # Subtract a framework baseline (only count what you added)
-netto --baseline ~/fresh-react-app
+netto --baseline ~/fresh-scaffold
 
 # Filter git stats to a specific author
 netto --author "Your Name"
@@ -95,6 +95,21 @@ netto --no-git
 
 # Output as JSON
 netto --json
+```
+
+**Baseline examples by framework:**
+```bash
+# Flutter
+flutter create baseline_app && netto --baseline ~/baseline_app
+
+# Next.js
+npx create-next-app baseline_app && netto --baseline ~/baseline_app
+
+# Express
+npx express-generator baseline_app && netto --baseline ~/baseline_app
+
+# Rails
+rails new baseline_app && netto --baseline ~/baseline_app
 ```
 
 ---
@@ -109,25 +124,92 @@ netto --json
 
 **Commit streak** — consecutive days you've made at least one commit. Counts backward from today.
 
-**Problem children** — files changed most frequently in git history. Usually where the complexity lives.
+**Problem children** — files changed most frequently in git history. Usually where the real complexity lives.
 
 ---
 
 ## Supported languages
 
+### Systems
 | Language | Extensions |
 |---|---|
 | Rust | `.rs` |
-| TypeScript | `.ts`, `.tsx` |
-| JavaScript | `.js`, `.jsx`, `.mjs` |
-| Python | `.py`, `.pyw` |
-| Go | `.go` |
-| Java | `.java` |
-| CSS / SCSS | `.css`, `.scss`, `.sass` |
-| HTML | `.html`, `.htm` |
-| Shell | `.sh`, `.bash`, `.zsh` |
-| JSON / YAML | `.json`, `.yml`, `.yaml` |
+| C | `.c`, `.h` |
+| C++ | `.cpp`, `.cc`, `.cxx`, `.hpp` |
+| C# | `.cs` |
+| Zig | `.zig` |
+
+### Web
+| Language | Extensions | Frameworks |
+|---|---|---|
+| TypeScript | `.ts`, `.tsx`, `.mts` | Next.js, Remix, Angular, NestJS |
+| JavaScript | `.js`, `.jsx`, `.mjs`, `.cjs` | Express, Svelte (compiled), Nuxt |
+| Svelte | `.svelte` | SvelteKit |
+| Vue | `.vue` | Nuxt, Quasar |
+| Astro | `.astro` | Astro |
+| HTML | `.html`, `.htm`, `.xhtml` | — |
+| CSS | `.css` | — |
+| SCSS | `.scss` | — |
+| Less | `.less` | — |
+
+### Mobile
+| Language | Extensions | Frameworks |
+|---|---|---|
+| Dart | `.dart` | Flutter |
+| Swift | `.swift` | iOS, macOS |
+| Kotlin | `.kt`, `.kts` | Android, Ktor |
+| Objective-C | `.m`, `.mm` | Legacy iOS/macOS |
+
+### Backend
+| Language | Extensions | Frameworks |
+|---|---|---|
+| Python | `.py`, `.pyw` | Django, FastAPI, Flask |
+| Ruby | `.rb`, `.rake` | Rails, Sinatra |
+| PHP | `.php` | Laravel, WordPress, Symfony |
+| Go | `.go` | Gin, Echo, Fiber |
+| Java | `.java` | Spring, Android |
+| Scala | `.scala` | Play, Spark |
+| Elixir | `.ex`, `.exs` | Phoenix |
+| Erlang | `.erl` | — |
+| Haskell | `.hs` | — |
+| Lua | `.lua` | — |
+| Perl | `.pl`, `.pm` | — |
+
+### JVM / Functional
+| Language | Extensions |
+|---|---|
+| Groovy | `.groovy`, `.gradle` |
+| Clojure | `.clj`, `.cljs` |
+| F# | `.fs`, `.fsx` |
+| OCaml | `.ml`, `.mli` |
+
+### Data / ML
+| Language | Extensions |
+|---|---|
+| Julia | `.jl` |
+| R | `.r`, `.rmd` |
+| MATLAB | `.m` |
+| Jupyter | `.ipynb` |
+
+### Infrastructure
+| Language | Extensions |
+|---|---|
+| Shell | `.sh`, `.bash`, `.zsh`, `.fish` |
+| PowerShell | `.ps1`, `.psm1` |
+| Dockerfile | `Dockerfile` |
+| SQL | `.sql` |
+| GraphQL | `.graphql`, `.gql` |
+
+### Config & Docs _(tracked in breakdown, not counted toward score)_
+| Type | Extensions |
+|---|---|
+| JSON | `.json`, `.jsonc` |
+| YAML | `.yml`, `.yaml` |
+| TOML | `.toml` |
+| XML | `.xml`, `.xsl` |
 | Markdown | `.md`, `.mdx` |
+| reStructuredText | `.rst` |
+| LaTeX | `.tex` |
 
 ---
 
