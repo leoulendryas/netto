@@ -1,44 +1,81 @@
+mod error;
 mod walker;
 mod loc;
-mod stats;
-mod output;
 
+use anyhow::Result;
 use clap::Parser;
+use colored::Colorize;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::path::PathBuf;
-use indicatif::ProgressBar;
-use crate::stats::AggregatedStats;
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
-struct Args {
+#[command(
+    name = "codescan",
+    about = "Find out how much of your codebase you actually wrote",
+    long_about = "
+codescan analyzes your codebase and shows you:
+  • How many lines YOU wrote vs frameworks/dependencies
+  • Language breakdown with percentages  
+  • Git history stats (peak hours, most changed files, etc.)
+  • Fun metrics that are actually worth sharing
+    ",
+    version,
+    author
+)]
+pub struct Cli {
     #[arg(default_value = ".")]
-    path: PathBuf,
+    pub path: PathBuf,
+
+    #[arg(long, short = 'w')]
+    pub web: bool,
+
+    #[arg(long, short = 'j')]
+    pub json: bool,
+
+    #[arg(long)]
+    pub no_git: bool,
 }
 
-fn main() {
-    // Initializing the analytics engine
-    let args = Args::parse();
-    let root = args.path.canonicalize().unwrap_or(args.path.clone());
+fn main() -> Result<()> {
+    let cli = Cli::parse();
 
-    println!("Scanning project at {}...", root.display());
+    let root = cli.path.canonicalize().map_err(|_| {
+        anyhow::anyhow!("Path '{}' does not exist", cli.path.display())
+    })?;
 
-    let files = walker::walk_project(&root);
-    let pb = ProgressBar::new(files.len() as u64);
-    
-    let mut stats = AggregatedStats::new();
+    println!(
+        "\n{} {}\n",
+        "Scanning".bold(),
+        root.display().to_string().cyan()
+    );
 
-    for file_info in files {
-        if let Ok(line_stats) = loc::counter::count_lines(&file_info.path) {
-            stats.add_file(&file_info, line_stats);
-        }
-        pb.inc(1);
+    let files = walker::walk(&root)?;
+
+    let spinner = ProgressBar::new_spinner();
+    spinner.set_style(
+        ProgressStyle::default_spinner()
+            .template("{spinner:.cyan} {msg}")
+            .unwrap(),
+    );
+    spinner.set_message(format!("Counting lines across {} files...", files.len()));
+    spinner.enable_steady_tick(std::time::Duration::from_millis(80));
+
+    let counts = loc::count_files(&files)?;
+
+    spinner.finish_and_clear();
+
+    println!("Total source lines: {}", counts.total_source_lines);
+    println!("Total all lines:    {}", counts.total_all_lines);
+    println!("\nBy language:");
+    for (lang, stats) in &counts.by_language {
+        println!(
+            "  {:12} {:>6} code  {:>5} comments  {:>5} blanks",
+            lang.display_name(),
+            stats.code,
+            stats.comments,
+            stats.blanks
+        );
     }
-    pb.finish_and_clear();
 
-    // Get Git stats
-    if let Ok(git_stats) = loc::git::get_git_stats(&root) {
-        stats.git_stats = Some(git_stats);
-    }
-
-    output::cli::display_stats(&stats);
+    Ok(())
 }

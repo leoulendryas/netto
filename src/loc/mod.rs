@@ -1,3 +1,5 @@
-pub mod language;
 pub mod counter;
-pub mod git;
+pub mod language;
+
+pub use counter::{count_files, FileCount, ProjectCount};
+pub use language::Language;
