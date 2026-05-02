@@ -28,10 +28,6 @@ pub struct LanguageStats {
 }
 
 impl LanguageStats {
-    pub fn total(&self) -> u64 {
-        self.code + self.comments + self.blanks
-    }
-
     fn add(&mut self, count: &FileCount) {
         self.file_count += 1;
         self.code += count.code;
@@ -40,62 +36,67 @@ impl LanguageStats {
     }
 }
 
-#[derive(Debug, Serialize)]
 pub struct ProjectCount {
     pub by_language: HashMap<Language, LanguageStats>,
+    pub by_file: HashMap<String, FileCount>,
     pub total_source_lines: u64,
     pub total_all_lines: u64,
-    pub skipped_files: u64,
+    pub generated_files_count: u64,
 }
 
-impl ProjectCount {
-    pub fn source_percentage(&self) -> f64 {
-        if self.total_all_lines == 0 {
-            return 0.0;
-        }
-        (self.total_source_lines as f64 / self.total_all_lines as f64) * 100.0
-    }
-
-    pub fn dominant_language(&self) -> Option<Language> {
-        self.by_language
-            .iter()
-            .filter(|(lang, _)| lang.is_source_language())
-            .max_by_key(|(_, stats)| stats.code)
-            .map(|(lang, _)| *lang)
-    }
-}
-
-pub fn count_files(files: &[FileEntry]) -> Result<ProjectCount, CodescanError> {
-    let results: Vec<(Language, FileCount)> = files
+pub fn count_files(files: &[FileEntry], baseline: Option<&ProjectCount>) -> Result<ProjectCount, CodescanError> {
+    let results: Vec<(String, Language, FileCount, bool)> = files
         .par_iter()
         .filter_map(|file| {
+            if file.is_generated {
+                return Some((file.path.to_string_lossy().to_string(), Language::Other, FileCount::default(), true));
+            }
             let ext = file.extension.as_deref()?; 
             let language = Language::from_extension(ext)?; 
             let count = count_single_file(file, language).ok()?; 
-            Some((language, count))
+            Some((file.path.to_string_lossy().to_string(), language, count, false))
         })
         .collect();
 
     let mut by_language: HashMap<Language, LanguageStats> = HashMap::new();
+    let mut by_file: HashMap<String, FileCount> = HashMap::new();
     let mut total_source_lines: u64 = 0;
     let mut total_all_lines: u64 = 0;
-    let skipped_files = (files.len() - results.len()) as u64;
+    let mut generated_files_count: u64 = 0;
 
-    for (language, count) in &results {
-        let stats = by_language.entry(*language).or_default();
-        stats.add(count);
-
-        total_all_lines += count.total();
-        if language.is_source_language() {
-            total_source_lines += count.code;
+    for (path, language, count, is_generated) in results {
+        if is_generated {
+            generated_files_count += 1;
+            continue;
         }
+
+        let mut final_count = count.clone();
+        
+        // Baseline subtraction
+        if let Some(bl) = baseline {
+            if let Some(bl_count) = bl.by_file.get(&path) {
+                final_count.code = count.code.saturating_sub(bl_count.code);
+                final_count.comments = count.comments.saturating_sub(bl_count.comments);
+                final_count.blanks = count.blanks.saturating_sub(bl_count.blanks);
+            }
+        }
+
+        let stats = by_language.entry(language).or_default();
+        stats.add(&final_count);
+
+        total_all_lines += final_count.total();
+        if language.is_source_language() {
+            total_source_lines += final_count.code;
+        }
+        by_file.insert(path, final_count);
     }
 
     Ok(ProjectCount {
         by_language,
+        by_file,
         total_source_lines,
         total_all_lines,
-        skipped_files,
+        generated_files_count,
     })
 }
 
@@ -166,6 +167,7 @@ mod tests {
             size_bytes: content.len() as u64,
             extension: Some(ext.to_string()),
             path,
+            is_generated: false,
         };
         (file, entry) 
     }

@@ -1,6 +1,7 @@
 mod error;
 mod walker;
 mod loc;
+mod output;
 
 use anyhow::Result;
 use clap::Parser;
@@ -12,19 +13,16 @@ use std::path::PathBuf;
 #[command(
     name = "codescan",
     about = "Find out how much of your codebase you actually wrote",
-    long_about = "
-codescan analyzes your codebase and shows you:
-  • How many lines YOU wrote vs frameworks/dependencies
-  • Language breakdown with percentages  
-  • Git history stats (peak hours, most changed files, etc.)
-  • Fun metrics that are actually worth sharing
-    ",
     version,
     author
 )]
 pub struct Cli {
     #[arg(default_value = ".")]
     pub path: PathBuf,
+
+    /// Point to a fresh scaffold to subtract it from the count
+    #[arg(long)]
+    pub baseline: Option<PathBuf>,
 
     #[arg(long, short = 'w')]
     pub web: bool,
@@ -34,6 +32,10 @@ pub struct Cli {
 
     #[arg(long)]
     pub no_git: bool,
+
+    /// Filter git stats by this author name
+    #[arg(long)]
+    pub author: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -49,6 +51,17 @@ fn main() -> Result<()> {
         root.display().to_string().cyan()
     );
 
+    // Detect frameworks
+    let frameworks = walker::detect_frameworks(&root);
+
+    // Baseline if provided
+    let mut baseline_stats = None;
+    if let Some(bl_path) = &cli.baseline {
+        let bl_root = bl_path.canonicalize()?;
+        let bl_files = walker::walk(&bl_root)?;
+        baseline_stats = Some(loc::count_files(&bl_files, None)?);
+    }
+
     let files = walker::walk(&root)?;
 
     let spinner = ProgressBar::new_spinner();
@@ -57,25 +70,25 @@ fn main() -> Result<()> {
             .template("{spinner:.cyan} {msg}")
             .unwrap(),
     );
-    spinner.set_message(format!("Counting lines across {} files...", files.len()));
+    spinner.set_message(format!("Analyzing {} files...", files.len()));
     spinner.enable_steady_tick(std::time::Duration::from_millis(80));
 
-    let counts = loc::count_files(&files)?;
+    let counts = loc::count_files(&files, baseline_stats.as_ref())?;
+
+    let git_insights = if !cli.no_git {
+        loc::get_git_insights(&root, cli.author.as_deref()).ok()
+    } else {
+        None
+    };
 
     spinner.finish_and_clear();
 
-    println!("Total source lines: {}", counts.total_source_lines);
-    println!("Total all lines:    {}", counts.total_all_lines);
-    println!("\nBy language:");
-    for (lang, stats) in &counts.by_language {
-        println!(
-            "  {:12} {:>6} code  {:>5} comments  {:>5} blanks",
-            lang.display_name(),
-            stats.code,
-            stats.comments,
-            stats.blanks
-        );
-    }
+    // "I wrote this" score calculation
+    // If no git, we use the non-generated code.
+    // If git, we could use git-based additions, but for now let's use the code count after baseline subtraction.
+    let original_lines = counts.total_source_lines;
+
+    output::cli::display_full_stats(&counts, git_insights.as_ref(), &frameworks, original_lines);
 
     Ok(())
 }
